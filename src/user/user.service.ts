@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { User, CreateUserDto, UpdatePasswordDto } from './user.interface';
+import { User, CreateUserDto, UpdatePasswordDto } from './entities/user.entity';
 import {
   LOGIN_ALREADY_USED,
   USER_NOT_FOUND,
