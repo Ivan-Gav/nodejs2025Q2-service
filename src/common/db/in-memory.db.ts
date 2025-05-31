@@ -1,5 +1,6 @@
 // src/core/database/in-memory.db.ts
 import { Injectable } from '@nestjs/common';
+import { Album } from 'src/album/entities/album.entity';
 import { Artist } from 'src/artist/entities/artist.entity';
 import { Track } from 'src/track/entities/track.entity';
 import { User } from 'src/user/entities/user.entity';
@@ -8,6 +9,7 @@ type EntityMap = {
   artists: Artist;
   tracks: Track;
   users: User;
+  albums: Album;
 };
 
 @Injectable()
@@ -18,6 +20,7 @@ export class InMemoryDB {
     artists: new Map<string, Artist>(),
     tracks: new Map<string, Track>(),
     users: new Map<string, User>(),
+    albums: new Map<string, Album>(),
   };
 
   async create<K extends keyof EntityMap>(
