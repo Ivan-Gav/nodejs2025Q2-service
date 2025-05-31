@@ -1,39 +1,50 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { genSalt, hash } from 'bcrypt';
-import { User, CreateUserDto } from './user.interface';
+import { User, CreateUserDto, UpdatePasswordDto } from './user.interface';
+import {
+  LOGIN_ALREADY_USED,
+  USER_NOT_FOUND,
+  WRONG_PASSWORD,
+} from 'src/common/errors/error-messages';
+import { PasswordUtils } from 'src/common/utils/password.utils';
 
 @Injectable()
 export class UserService {
   private users: Record<string, User>;
 
-  constructor() {
+  constructor(private readonly passwordUtils: PasswordUtils) {
     this.users = {};
   }
 
   async getAllUsers() {
-    return this.users; // TODO remove ids
+    return Object.values(this.users);
   }
 
   async getUserByID(userId: string) {
-    return this.users[userId]; // TODO remove ids
+    const user = this.users[userId];
+    if (!user) {
+      throw new NotFoundException(USER_NOT_FOUND(userId));
+    }
+    return user;
   }
 
   async createUser(dto: CreateUserDto) {
     const isExistingUser = await this.checkIfUserExists(dto);
 
-    if (isExistingUser) {
-      throw new HttpException(
-        'This login is already used',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
     const { login, password } = dto;
+
+    if (isExistingUser) {
+      throw new BadRequestException(LOGIN_ALREADY_USED(login));
+    }
 
     const id = randomUUID();
 
-    const cryptedPassword = await this.hashPassword(password);
+    const cryptedPassword = await this.passwordUtils.hashPassword(password);
     const currentTimestamp = Date.now();
 
     const newUser: User = {
@@ -46,28 +57,55 @@ export class UserService {
     };
 
     this.users[id] = newUser;
-    return newUser; // TODO: remove id
+    return newUser;
+  }
+
+  async updateUserPasswordById(
+    userId: string,
+    newPasswordDto: UpdatePasswordDto,
+  ) {
+    const user = this.users[userId];
+    if (!user) {
+      throw new NotFoundException(USER_NOT_FOUND(userId));
+    }
+
+    const { oldPassword, newPassword } = newPasswordDto;
+
+    const isOldPasswordCorrect = await this.passwordUtils.comparePassword(
+      oldPassword,
+      user.password,
+    );
+
+    if (!isOldPasswordCorrect) {
+      throw new ForbiddenException(WRONG_PASSWORD(oldPassword));
+    }
+
+    const cryptedNewPassword =
+      await this.passwordUtils.hashPassword(newPassword);
+    const currentTimestamp = Date.now();
+
+    const updatedUser: User = {
+      ...user,
+      password: cryptedNewPassword,
+      version: user.version + 1,
+      updatedAt: currentTimestamp,
+    };
+    this.users[userId] = updatedUser;
+    return updatedUser;
   }
 
   async deleteUserById(userId: string) {
-    const entry = this.users[userId];
+    const user = this.users[userId];
 
-    if (entry) {
-      delete this.users[userId];
-      return true;
+    if (!user) {
+      throw new NotFoundException(USER_NOT_FOUND(userId));
     }
 
-    return false;
+    delete this.users[userId];
   }
 
   private async checkIfUserExists(dto: CreateUserDto) {
     const { login } = dto;
     return Object.values(this.users).some((user) => user.login === login);
-  }
-
-  private async hashPassword(password: string): Promise<string> {
-    const saltRounds = Number(process.env.CRYPT_SALT || 10);
-    const salt = await genSalt(saltRounds);
-    return await hash(password, salt);
   }
 }
