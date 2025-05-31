@@ -4,7 +4,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
 import { User, CreateUserDto, UpdatePasswordDto } from './entities/user.entity';
 import {
   LOGIN_ALREADY_USED,
@@ -12,28 +11,28 @@ import {
   WRONG_PASSWORD,
 } from 'src/common/errors/error-messages';
 import { PasswordUtils } from 'src/common/utils/password.utils';
+import { UserRepository } from './user.repository';
 
 @Injectable()
 export class UserService {
-  private users: Record<string, User>;
+  constructor(
+    private readonly passwordUtils: PasswordUtils,
+    private readonly repository: UserRepository,
+  ) {}
 
-  constructor(private readonly passwordUtils: PasswordUtils) {
-    this.users = {};
+  async findAll() {
+    return await this.repository.findAll();
   }
 
-  async getAllUsers() {
-    return Object.values(this.users);
-  }
-
-  async getUserByID(userId: string) {
-    const user = this.users[userId];
+  async findOne(id: string) {
+    const user = await this.repository.findById(id);
     if (!user) {
-      throw new NotFoundException(USER_NOT_FOUND(userId));
+      throw new NotFoundException(USER_NOT_FOUND(id));
     }
     return user;
   }
 
-  async createUser(dto: CreateUserDto) {
+  async create(dto: CreateUserDto) {
     const isExistingUser = await this.checkIfUserExists(dto);
 
     const { login, password } = dto;
@@ -42,13 +41,10 @@ export class UserService {
       throw new BadRequestException(LOGIN_ALREADY_USED(login));
     }
 
-    const id = randomUUID();
-
     const cryptedPassword = await this.passwordUtils.hashPassword(password);
     const currentTimestamp = Date.now();
 
-    const newUser: User = {
-      id,
+    const newUser: Omit<User, 'id'> = {
       login,
       password: cryptedPassword,
       version: 1,
@@ -56,17 +52,13 @@ export class UserService {
       updatedAt: currentTimestamp,
     };
 
-    this.users[id] = newUser;
-    return newUser;
+    return await this.repository.create(newUser);
   }
 
-  async updateUserPasswordById(
-    userId: string,
-    newPasswordDto: UpdatePasswordDto,
-  ) {
-    const user = this.users[userId];
+  async updateUserPasswordById(id: string, newPasswordDto: UpdatePasswordDto) {
+    const user = await this.repository.findById(id);
     if (!user) {
-      throw new NotFoundException(USER_NOT_FOUND(userId));
+      throw new NotFoundException(USER_NOT_FOUND(id));
     }
 
     const { oldPassword, newPassword } = newPasswordDto;
@@ -84,28 +76,27 @@ export class UserService {
       await this.passwordUtils.hashPassword(newPassword);
     const currentTimestamp = Date.now();
 
-    const updatedUser: User = {
+    const updatedUser: Omit<User, 'id'> = {
       ...user,
       password: cryptedNewPassword,
       version: user.version + 1,
       updatedAt: currentTimestamp,
     };
-    this.users[userId] = updatedUser;
-    return updatedUser;
+
+    return await this.repository.update(id, updatedUser);
   }
 
-  async deleteUserById(userId: string) {
-    const user = this.users[userId];
+  async deleteUserById(id: string) {
+    const user = await this.repository.remove(id);
 
-    if (!user) {
-      throw new NotFoundException(USER_NOT_FOUND(userId));
+    if (user === 0 || !user) {
+      throw new NotFoundException(USER_NOT_FOUND(id));
     }
-
-    delete this.users[userId];
   }
 
   private async checkIfUserExists(dto: CreateUserDto) {
     const { login } = dto;
-    return Object.values(this.users).some((user) => user.login === login);
+    const all = await this.repository.findAll();
+    return all.some((user) => user.login === login);
   }
 }

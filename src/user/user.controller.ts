@@ -23,17 +23,17 @@ export class UserController {
 
   @Get()
   async getAll() {
-    return await this.userService.getAllUsers();
+    return await this.userService.findAll();
   }
 
   @Get('/:id')
   async getById(@Param() { id }: IdParamDto) {
-    return await this.userService.getUserByID(id);
+    return await this.userService.findOne(id);
   }
 
   @Post()
   async create(@Body() userDto: CreateUserDto) {
-    return await this.userService.createUser(userDto);
+    return await this.userService.create(userDto);
   }
 
   @Put('/:id')

@@ -4,20 +4,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateArtistDto } from './dto/create-artist.dto';
-import { Artist } from './entities/artist.entity';
 import {
   ARTIST_ALREADY_EXISTS,
   ARTIST_NOT_FOUND,
 } from 'src/common/errors/error-messages';
-import { randomUUID } from 'crypto';
+import { ArtistRepository } from './artist.repository';
 
 @Injectable()
 export class ArtistService {
-  private artists: Record<string, Artist>;
-
-  constructor() {
-    this.artists = {};
-  }
+  constructor(private readonly repository: ArtistRepository) {}
 
   async create(dto: CreateArtistDto) {
     const isExistingArtist = await this.checkIfArtistExists(dto);
@@ -26,23 +21,15 @@ export class ArtistService {
       throw new BadRequestException(ARTIST_ALREADY_EXISTS(dto.name));
     }
 
-    const id = randomUUID();
-
-    const newArtist: Artist = {
-      ...dto,
-      id,
-    };
-
-    this.artists[id] = newArtist;
-    return newArtist;
+    return await this.repository.create(dto);
   }
 
   async findAll() {
-    return Object.values(this.artists);
+    return await this.repository.findAll();
   }
 
   async findOne(id: string) {
-    const artist = this.artists[id];
+    const artist = await this.repository.findById(id);
     if (!artist) {
       throw new NotFoundException(ARTIST_NOT_FOUND(id));
     }
@@ -50,27 +37,24 @@ export class ArtistService {
   }
 
   async update(id: string, updateArtistDto: CreateArtistDto) {
-    const artist = this.artists[id];
+    const artist = await this.repository.update(id, updateArtistDto);
     if (!artist) {
       throw new NotFoundException(ARTIST_NOT_FOUND(id));
     }
-
-    this.artists[id] = { ...updateArtistDto, id };
-    return this.artists[id];
+    return artist;
   }
 
   async remove(id: string) {
-    const artist = this.artists[id];
+    const artist = await this.repository.remove(id);
 
-    if (!artist) {
+    if (artist === 0 || !artist) {
       throw new NotFoundException(ARTIST_NOT_FOUND(id));
     }
-
-    delete this.artists[id];
   }
 
   private async checkIfArtistExists(dto: CreateArtistDto) {
     const { name } = dto;
-    return Object.values(this.artists).some((artist) => artist.name === name);
+    const all = await this.repository.findAll();
+    return all.some((artist) => artist.name === name);
   }
 }
