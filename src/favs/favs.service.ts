@@ -1,4 +1,6 @@
 import {
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
   UnprocessableEntityException,
@@ -15,8 +17,11 @@ import { UNPROCESSABLE_ENTITY } from 'src/common/messages/error-messages';
 export class FavsService {
   constructor(
     private readonly repository: FavsRepository,
+    @Inject(forwardRef(() => ArtistService))
     private readonly artistService: ArtistService,
+    @Inject(forwardRef(() => AlbumService))
     private readonly albumService: AlbumService,
+    @Inject(forwardRef(() => TrackService))
     private readonly trackService: TrackService,
   ) {}
 
@@ -36,7 +41,7 @@ export class FavsService {
   }
 
   async remove(type: keyof Favorites, id: string) {
-    await this.throwErrorIfNotExists(type, id);
+    // await this.throwErrorIfNotExists(type, id);
     return this.repository.remove(type, id);
   }
 

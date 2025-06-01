@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -10,16 +12,21 @@ import {
   ARTIST_NOT_FOUND,
   TRACK_NOT_FOUND,
 } from 'src/common/messages/error-messages';
-import { AlbumRepository } from 'src/album/album.repository';
-import { ArtistRepository } from 'src/artist/artist.repository';
 import { Track } from './entities/track.entity';
+import { ArtistService } from 'src/artist/artist.service';
+import { FavsService } from 'src/favs/favs.service';
+import { AlbumService } from 'src/album/album.service';
 
 @Injectable()
 export class TrackService {
   constructor(
     private readonly repository: TrackRepository,
-    private readonly artistRepository: ArtistRepository,
-    private readonly albumRepository: AlbumRepository,
+    @Inject(forwardRef(() => ArtistService))
+    private readonly artistService: ArtistService,
+    @Inject(forwardRef(() => AlbumService))
+    private readonly albumService: AlbumService,
+    @Inject(forwardRef(() => FavsService))
+    private readonly favsService: FavsService,
   ) {}
 
   async create(dto: CreateTrackDto) {
@@ -84,10 +91,36 @@ export class TrackService {
   }
 
   async remove(id: string) {
+    await this.favsService.remove('artists', id);
+
     const track = await this.repository.remove(id);
     if (!track) {
       throw new NotFoundException(TRACK_NOT_FOUND(id));
     }
+  }
+
+  async eraseArtist(id: string) {
+    const tracks = await this.repository.findAll();
+    await Promise.all(
+      tracks.map((track) => {
+        if (track.artistId === id) {
+          const { id, ...rest } = track;
+          this.repository.update(id, { ...rest, artistId: null });
+        }
+      }),
+    );
+  }
+
+  async eraseAlbum(id: string) {
+    const tracks = await this.repository.findAll();
+    await Promise.all(
+      tracks.map((track) => {
+        if (track.albumId === id) {
+          const { id, ...rest } = track;
+          this.repository.update(id, { ...rest, albumId: null });
+        }
+      }),
+    );
   }
 
   private async checkIfArtistExists(dto: CreateTrackDto) {
@@ -95,7 +128,7 @@ export class TrackService {
     if (artistId === null) {
       return true;
     }
-    const artist = await this.artistRepository.findById(artistId);
+    const artist = await this.artistService.findOne(artistId);
     return !!artist;
   }
 
@@ -104,7 +137,7 @@ export class TrackService {
     if (albumId === null) {
       return true;
     }
-    const album = await this.albumRepository.findById(albumId);
+    const album = await this.albumService.findOne(albumId);
     return !!album;
   }
 }
