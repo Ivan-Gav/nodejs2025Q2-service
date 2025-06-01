@@ -9,3 +9,4 @@ export const ARTIST_NOT_FOUND = (id: string) => `Artist ${id} not found`;
 export const ALBUM_ALREADY_EXISTS = (name: string) =>
   `Artist already has album named ${name}`;
 export const ALBUM_NOT_FOUND = (id: string) => `Album ${id} not found`;
+export const TRACK_NOT_FOUND = (id: string) => `Track ${id} not found`;

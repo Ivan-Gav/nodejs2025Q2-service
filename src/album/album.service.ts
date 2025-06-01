@@ -10,7 +10,6 @@ import {
   ALBUM_NOT_FOUND,
   ARTIST_NOT_FOUND,
 } from 'src/common/errors/error-messages';
-import { UpdateAlbumDto } from './dto/update-album.dto';
 import { ArtistRepository } from 'src/artist/artist.repository';
 
 @Injectable()
@@ -49,7 +48,7 @@ export class AlbumService {
     return album;
   }
 
-  async update(id: string, updateAlbumDto: UpdateAlbumDto) {
+  async update(id: string, updateAlbumDto: CreateAlbumDto) {
     const album = await this.repository.update(id, updateAlbumDto);
     if (!album) {
       throw new NotFoundException(ALBUM_NOT_FOUND(id));

@@ -6,6 +6,8 @@ import {
   Patch,
   Param,
   Delete,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { AlbumService } from './album.service';
 import { CreateAlbumDto } from './dto/create-album.dto';
@@ -16,27 +18,31 @@ export class AlbumController {
   constructor(private readonly albumService: AlbumService) {}
 
   @Post()
-  create(@Body() createAlbumDto: CreateAlbumDto) {
-    return this.albumService.create(createAlbumDto);
+  async create(@Body() createAlbumDto: CreateAlbumDto) {
+    return await this.albumService.create(createAlbumDto);
   }
 
   @Get()
-  findAll() {
-    return this.albumService.findAll();
+  async findAll() {
+    return await this.albumService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param() { id }: IdParamDto) {
-    return this.albumService.findOne(id);
+  async findOne(@Param() { id }: IdParamDto) {
+    return await this.albumService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param() { id }: IdParamDto, @Body() updateAlbumDto: CreateAlbumDto) {
-    return this.albumService.update(id, updateAlbumDto);
+  async update(
+    @Param() { id }: IdParamDto,
+    @Body() updateAlbumDto: CreateAlbumDto,
+  ) {
+    return await this.albumService.update(id, updateAlbumDto);
   }
 
   @Delete(':id')
-  remove(@Param() { id }: IdParamDto) {
-    return this.albumService.remove(id);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param() { id }: IdParamDto) {
+    await this.albumService.remove(id);
   }
 }
