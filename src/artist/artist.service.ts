@@ -7,8 +7,9 @@ import { CreateArtistDto } from './dto/create-artist.dto';
 import {
   ARTIST_ALREADY_EXISTS,
   ARTIST_NOT_FOUND,
-} from 'src/common/errors/error-messages';
+} from 'src/common/messages/error-messages';
 import { ArtistRepository } from './artist.repository';
+import { Artist } from './entities/artist.entity';
 
 @Injectable()
 export class ArtistService {
@@ -34,6 +35,16 @@ export class ArtistService {
       throw new NotFoundException(ARTIST_NOT_FOUND(id));
     }
     return artist;
+  }
+
+  async findMany(ids: string[]) {
+    if (!ids.length) {
+      return [] as Artist[];
+    }
+    const artists = await Promise.all(
+      ids.map((id) => this.repository.findById(id)),
+    );
+    return artists.filter((artist): artist is Artist => artist !== undefined);
   }
 
   async update(id: string, updateArtistDto: CreateArtistDto) {

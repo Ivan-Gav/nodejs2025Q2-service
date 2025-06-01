@@ -9,9 +9,10 @@ import {
   ALBUM_NOT_FOUND,
   ARTIST_NOT_FOUND,
   TRACK_NOT_FOUND,
-} from 'src/common/errors/error-messages';
+} from 'src/common/messages/error-messages';
 import { AlbumRepository } from 'src/album/album.repository';
 import { ArtistRepository } from 'src/artist/artist.repository';
+import { Track } from './entities/track.entity';
 
 @Injectable()
 export class TrackService {
@@ -48,6 +49,16 @@ export class TrackService {
       throw new NotFoundException(TRACK_NOT_FOUND(id));
     }
     return track;
+  }
+
+  async findMany(ids: string[]) {
+    if (!ids.length) {
+      return [] as Track[];
+    }
+    const tracks = await Promise.all(
+      ids.map((id) => this.repository.findById(id)),
+    );
+    return tracks.filter((track): track is Track => track !== undefined);
   }
 
   async update(id: string, dto: CreateTrackDto) {

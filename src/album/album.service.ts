@@ -9,8 +9,9 @@ import {
   ALBUM_ALREADY_EXISTS,
   ALBUM_NOT_FOUND,
   ARTIST_NOT_FOUND,
-} from 'src/common/errors/error-messages';
+} from 'src/common/messages/error-messages';
 import { ArtistRepository } from 'src/artist/artist.repository';
+import { Album } from './entities/album.entity';
 
 @Injectable()
 export class AlbumService {
@@ -46,6 +47,16 @@ export class AlbumService {
       throw new NotFoundException(ALBUM_NOT_FOUND(id));
     }
     return album;
+  }
+
+  async findMany(ids: string[]) {
+    if (!ids.length) {
+      return [] as Album[];
+    }
+    const albums = await Promise.all(
+      ids.map((id) => this.repository.findById(id)),
+    );
+    return albums.filter((album): album is Album => album !== undefined);
   }
 
   async update(id: string, updateAlbumDto: CreateAlbumDto) {

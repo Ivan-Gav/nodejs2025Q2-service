@@ -9,7 +9,7 @@ import {
   LOGIN_ALREADY_USED,
   USER_NOT_FOUND,
   WRONG_PASSWORD,
-} from 'src/common/errors/error-messages';
+} from 'src/common/messages/error-messages';
 import { PasswordUtils } from 'src/common/utils/password.utils';
 import { UserRepository } from './user.repository';
 
