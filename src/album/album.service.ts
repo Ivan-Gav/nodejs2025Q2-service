@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateAlbumDto } from './dto/create-album.dto';
-import { AlbumRepository } from './album.repository';
+// import { AlbumRepository } from './album.repository';
 import {
   // ALBUM_ALREADY_EXISTS,
   ALBUM_NOT_FOUND,
@@ -16,11 +16,12 @@ import { Album } from './entities/album.entity';
 import { TrackService } from 'src/track/track.service';
 import { FavsService } from 'src/favs/favs.service';
 import { ArtistService } from 'src/artist/artist.service';
+import { In, Repository } from 'typeorm';
 
 @Injectable()
 export class AlbumService {
   constructor(
-    private readonly repository: AlbumRepository,
+    private readonly repository: Repository<Album>,
     @Inject(forwardRef(() => ArtistService))
     private readonly artistService: ArtistService,
     @Inject(forwardRef(() => TrackService))
@@ -43,15 +44,15 @@ export class AlbumService {
     //   throw new BadRequestException(ALBUM_ALREADY_EXISTS(dto.name));
     // }
 
-    return await this.repository.create(dto);
+    return await this.repository.save(dto);
   }
 
   async findAll() {
-    return await this.repository.findAll();
+    return await this.repository.find();
   }
 
   async findOne(id: string) {
-    const album = await this.repository.findById(id);
+    const album = await this.repository.findOneBy({ id });
     if (!album) {
       throw new NotFoundException(ALBUM_NOT_FOUND(id));
     }
@@ -62,59 +63,66 @@ export class AlbumService {
     if (!ids.length) {
       return [] as Album[];
     }
-    const albums = await Promise.all(
-      ids.map((id) => this.repository.findById(id)),
-    );
-    return albums.filter((album): album is Album => album !== undefined);
+
+    return await this.repository.find({
+      where: { id: In(ids) },
+    });
   }
 
   async update(id: string, updateAlbumDto: CreateAlbumDto) {
-    const album = await this.repository.update(id, updateAlbumDto);
+    const album = await this.repository.findOneBy({ id });
     if (!album) {
       throw new NotFoundException(ALBUM_NOT_FOUND(id));
     }
-    return album;
+
+    const updatedAlbum = { ...album, ...updateAlbumDto };
+
+    await this.repository.save(updatedAlbum);
+
+    return updatedAlbum;
   }
 
   async remove(id: string) {
-    await Promise.all([
-      this.trackService.eraseAlbum(id),
-      this.favsService.remove('artists', id),
-    ]);
+    // await Promise.all([
+    //   this.trackService.eraseAlbum(id),
+    //   this.favsService.remove('artists', id),
+    // ]);
 
-    const album = await this.repository.remove(id);
+    const album = await this.repository.findOneBy({ id });
 
-    if (album === 0 || !album) {
+    if (!album) {
       throw new NotFoundException(ALBUM_NOT_FOUND(id));
     }
+
+    await this.repository.remove(album);
   }
 
-  async eraseArtist(id: string) {
-    const albums = await this.repository.findAll();
-    await Promise.all(
-      albums.map((album) => {
-        if (album.artistId === id) {
-          const { id, ...rest } = album;
-          this.repository.update(id, { ...rest, artistId: null });
-        }
-      }),
-    );
-  }
+  // async eraseArtist(id: string) {
+  //   const albums = await this.repository.findAll();
+  //   await Promise.all(
+  //     albums.map((album) => {
+  //       if (album.artistId === id) {
+  //         const { id, ...rest } = album;
+  //         this.repository.update(id, { ...rest, artistId: null });
+  //       }
+  //     }),
+  //   );
+  // }
 
-  private async checkIfAlbumExists(dto: CreateAlbumDto) {
-    const { name, artistId } = dto;
-    const all = await this.repository.findAll();
-    return all.some(
-      (album) => album.name === name && album.artistId === artistId,
-    );
-  }
+  // private async checkIfAlbumExists(dto: CreateAlbumDto) {
+  //   const { name, artistId } = dto;
+  //   const all = await this.repository.findAll();
+  //   return all.some(
+  //     (album) => album.name === name && album.artistId === artistId,
+  //   );
+  // }
 
-  private async checkIfArtistExists(dto: CreateAlbumDto) {
-    const { artistId } = dto;
-    if (artistId === null) {
-      return true;
-    }
-    const artist = await this.artistService.findOne(artistId);
-    return !!artist;
-  }
+  // private async checkIfArtistExists(dto: CreateAlbumDto) {
+  //   const { artistId } = dto;
+  //   if (artistId === null) {
+  //     return true;
+  //   }
+  //   const artist = await this.artistService.findOne(artistId);
+  //   return !!artist;
+  // }
 }

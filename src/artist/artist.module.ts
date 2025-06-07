@@ -2,10 +2,11 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { ArtistController } from './artist.controller';
 import { ArtistService } from './artist.service';
-import { ArtistRepository } from './artist.repository';
+
 import { AlbumModule } from 'src/album/album.module';
 import { FavsModule } from 'src/favs/favs.module';
 import { TrackModule } from 'src/track/track.module';
+import { Repository } from 'typeorm';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { TrackModule } from 'src/track/track.module';
     forwardRef(() => TrackModule),
   ],
   controllers: [ArtistController],
-  providers: [ArtistRepository, ArtistService],
-  exports: [ArtistService, ArtistRepository],
+  providers: [Repository, ArtistService],
+  exports: [ArtistService],
 })
 export class ArtistModule {}

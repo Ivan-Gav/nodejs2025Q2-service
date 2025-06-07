@@ -10,11 +10,12 @@ import {
   // ARTIST_ALREADY_EXISTS,
   ARTIST_NOT_FOUND,
 } from 'src/common/messages/error-messages';
-import { ArtistRepository } from './artist.repository';
+// import { ArtistRepository } from './artist.repository';
 import { Artist } from './entities/artist.entity';
 import { AlbumService } from 'src/album/album.service';
 import { FavsService } from 'src/favs/favs.service';
 import { TrackService } from 'src/track/track.service';
+import { In, Repository } from 'typeorm';
 
 @Injectable()
 export class ArtistService {
@@ -25,7 +26,7 @@ export class ArtistService {
     private readonly favsService: FavsService,
     @Inject(forwardRef(() => TrackService))
     private readonly tracksService: TrackService,
-    private readonly repository: ArtistRepository,
+    private readonly repository: Repository<Artist>,
   ) {}
 
   async create(dto: CreateArtistDto) {
@@ -35,15 +36,15 @@ export class ArtistService {
     //   throw new BadRequestException(ARTIST_ALREADY_EXISTS(dto.name));
     // }
 
-    return await this.repository.create(dto);
+    return await this.repository.save(dto);
   }
 
   async findAll() {
-    return await this.repository.findAll();
+    return await this.repository.find();
   }
 
   async findOne(id: string) {
-    const artist = await this.repository.findById(id);
+    const artist = await this.repository.findOneBy({ id });
     if (!artist) {
       throw new NotFoundException(ARTIST_NOT_FOUND(id));
     }
@@ -54,37 +55,44 @@ export class ArtistService {
     if (!ids.length) {
       return [] as Artist[];
     }
-    const artists = await Promise.all(
-      ids.map((id) => this.repository.findById(id)),
-    );
-    return artists.filter((artist): artist is Artist => artist !== undefined);
+
+    return await this.repository.find({
+      where: { id: In(ids) },
+    });
   }
 
   async update(id: string, updateArtistDto: CreateArtistDto) {
-    const artist = await this.repository.update(id, updateArtistDto);
+    const artist = await this.repository.findOneBy({ id });
     if (!artist) {
       throw new NotFoundException(ARTIST_NOT_FOUND(id));
     }
-    return artist;
+
+    const updatedArtist = { ...artist, ...updateArtistDto };
+
+    await this.repository.save(updatedArtist);
+
+    return updatedArtist;
   }
 
   async remove(id: string) {
-    await Promise.all([
-      this.albumService.eraseArtist(id),
-      this.tracksService.eraseArtist(id),
-      this.favsService.remove('artists', id),
-    ]);
+    // await Promise.all([
+    //   this.albumService.eraseArtist(id),
+    //   this.tracksService.eraseArtist(id),
+    //   this.favsService.remove('artists', id),
+    // ]);
 
-    const artist = await this.repository.remove(id);
+    const artist = await this.repository.findOneBy({ id });
 
-    if (artist === 0 || !artist) {
+    if (!artist) {
       throw new NotFoundException(ARTIST_NOT_FOUND(id));
     }
+
+    await this.repository.remove(artist);
   }
 
-  private async checkIfArtistExists(dto: CreateArtistDto) {
-    const { name } = dto;
-    const all = await this.repository.findAll();
-    return all.some((artist) => artist.name === name);
-  }
+  // private async checkIfArtistExists(dto: CreateArtistDto) {
+  //   const { name } = dto;
+  //   const all = await this.repository.findAll();
+  //   return all.some((artist) => artist.name === name);
+  // }
 }

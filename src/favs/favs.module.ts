@@ -3,8 +3,8 @@ import { AlbumModule } from 'src/album/album.module';
 import { ArtistModule } from 'src/artist/artist.module';
 import { TrackModule } from 'src/track/track.module';
 import { FavsController } from './favs.controller';
-import { FavsRepository } from './favs.repository';
 import { FavsService } from './favs.service';
+import { Repository } from 'typeorm';
 
 @Module({
   imports: [
@@ -13,7 +13,7 @@ import { FavsService } from './favs.service';
     forwardRef(() => TrackModule),
   ],
   controllers: [FavsController],
-  providers: [FavsRepository, FavsService],
+  providers: [Repository, FavsService],
   exports: [FavsService],
 })
 export class FavsModule {}

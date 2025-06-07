@@ -1,31 +1,32 @@
 import {
-  BadRequestException,
+  // BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { User, CreateUserDto, UpdatePasswordDto } from './entities/user.entity';
 import {
-  LOGIN_ALREADY_USED,
+  // LOGIN_ALREADY_USED,
   USER_NOT_FOUND,
   WRONG_PASSWORD,
 } from 'src/common/messages/error-messages';
 import { PasswordUtils } from 'src/common/utils/password.utils';
-import { UserRepository } from './user.repository';
+// import { UserRepository } from './user.repository';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly passwordUtils: PasswordUtils,
-    private readonly repository: UserRepository,
+    private readonly repository: Repository<User>,
   ) {}
 
   async findAll() {
-    return await this.repository.findAll();
+    return await this.repository.find();
   }
 
   async findOne(id: string) {
-    const user = await this.repository.findById(id);
+    const user = await this.repository.findOneBy({ id });
     if (!user) {
       throw new NotFoundException(USER_NOT_FOUND(id));
     }
@@ -33,30 +34,26 @@ export class UserService {
   }
 
   async create(dto: CreateUserDto) {
-    const isExistingUser = await this.checkIfUserExists(dto);
+    // const isExistingUser = await this.checkIfUserExists(dto);
 
     const { login, password } = dto;
 
-    if (isExistingUser) {
-      throw new BadRequestException(LOGIN_ALREADY_USED(login));
-    }
+    // if (isExistingUser) {
+    //   throw new BadRequestException(LOGIN_ALREADY_USED(login));
+    // }
 
     const cryptedPassword = await this.passwordUtils.hashPassword(password);
-    const currentTimestamp = Date.now();
 
-    const newUser: Omit<User, 'id'> = {
+    const newUser = {
       login,
       password: cryptedPassword,
-      version: 1,
-      createdAt: currentTimestamp,
-      updatedAt: currentTimestamp,
     };
 
-    return await this.repository.create(newUser);
+    return await this.repository.save(newUser);
   }
 
   async updateUserPasswordById(id: string, newPasswordDto: UpdatePasswordDto) {
-    const user = await this.repository.findById(id);
+    const user = await this.repository.findOneBy({ id });
     if (!user) {
       throw new NotFoundException(USER_NOT_FOUND(id));
     }
@@ -69,34 +66,29 @@ export class UserService {
     );
 
     if (!isOldPasswordCorrect) {
-      throw new ForbiddenException(WRONG_PASSWORD(oldPassword));
+      throw new ForbiddenException(WRONG_PASSWORD());
     }
 
     const cryptedNewPassword =
       await this.passwordUtils.hashPassword(newPassword);
-    const currentTimestamp = Date.now();
 
-    const updatedUser: Omit<User, 'id'> = {
-      ...user,
-      password: cryptedNewPassword,
-      version: user.version + 1,
-      updatedAt: currentTimestamp,
-    };
+    user.password = cryptedNewPassword;
 
-    return await this.repository.update(id, updatedUser);
+    return await this.repository.save(user);
   }
 
   async deleteUserById(id: string) {
-    const user = await this.repository.remove(id);
+    const user = await this.repository.findOneBy({ id });
 
-    if (user === 0 || !user) {
+    if (!user) {
       throw new NotFoundException(USER_NOT_FOUND(id));
     }
+    await this.repository.remove(user);
   }
 
-  private async checkIfUserExists(dto: CreateUserDto) {
-    const { login } = dto;
-    const all = await this.repository.findAll();
-    return all.some((user) => user.login === login);
-  }
+  // private async checkIfUserExists(dto: CreateUserDto) {
+  //   const { login } = dto;
+  //   const all = await this.repository.findAll();
+  //   return all.some((user) => user.login === login);
+  // }
 }
