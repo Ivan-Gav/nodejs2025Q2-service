@@ -9,8 +9,20 @@ import { InMemoryDB } from './common/db/in-memory.db';
 import { DatabaseModule } from './common/db/in-memory.db.module';
 import { FavsModule } from './favs/favs.module';
 
+import { TypeOrmModule } from '@nestjs/typeorm';
+import AppDataSource from './data-source';
+
 @Module({
   imports: [
+    TypeOrmModule.forRootAsync({
+      useFactory: () => AppDataSource.options,
+      dataSourceFactory: async () => {
+        if (!AppDataSource.isInitialized) {
+          await AppDataSource.initialize();
+        }
+        return AppDataSource;
+      },
+    }),
     UserModule,
     TrackModule,
     ArtistModule,
