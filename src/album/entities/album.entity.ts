@@ -1,6 +1,44 @@
-export interface Album {
-  id: string; // uuid v4
+import { Artist } from 'src/artist/entities/artist.entity';
+import { Favorites } from 'src/favs/entities/fav.entity';
+import { Track } from 'src/track/entities/track.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+  ManyToMany,
+} from 'typeorm';
+
+// export interface Album {
+//   id: string; // uuid v4
+//   name: string;
+//   year: number;
+//   artistId: string | null; // refers to Artist
+// }
+
+@Entity()
+export class Album {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
   name: string;
+
+  @Column()
   year: number;
-  artistId: string | null; // refers to Artist
+
+  @Column({ nullable: true })
+  artistId: string;
+
+  @ManyToOne(() => Artist, (artist) => artist.albums)
+  artist: Artist;
+
+  @OneToMany(() => Track, (track) => track.albumId, { onDelete: 'SET NULL' })
+  tracks: Track[];
+
+  @ManyToMany(() => Favorites, (favorites) => favorites.albums, {
+    cascade: ['remove'],
+  })
+  favorites: Favorites;
 }

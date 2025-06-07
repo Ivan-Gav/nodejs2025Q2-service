@@ -1,11 +1,20 @@
-export interface User {
-  id: string; // uuid v4
-  login: string;
-  password: string;
-  version: number; // integer number, increments on update
-  createdAt: number; // timestamp of creation
-  updatedAt: number; // timestamp of last update
-}
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  VersionColumn,
+} from 'typeorm';
+
+// export interface User {
+//   id: string; // uuid v4
+//   login: string;
+//   password: string;
+//   version: number; // integer number, increments on update
+//   createdAt: number; // timestamp of creation
+//   updatedAt: number; // timestamp of last update
+// }
 
 export interface CreateUserDto {
   login: string;
@@ -15,4 +24,37 @@ export interface CreateUserDto {
 export interface UpdatePasswordDto {
   oldPassword: string; // previous password
   newPassword: string; // new password
+}
+
+@Entity()
+export class User {
+  @PrimaryGeneratedColumn('uuid')
+  id: string; // uuid v4
+
+  @Column()
+  login: string;
+
+  @Column()
+  password: string; // hashing is executed in service
+
+  @VersionColumn({ default: 1 })
+  version: number;
+
+  @CreateDateColumn({
+    type: 'bigint',
+    transformer: {
+      to: (value: Date) => value?.getTime(),
+      from: (value: number) => new Date(value),
+    },
+  })
+  createdAt: number;
+
+  @UpdateDateColumn({
+    type: 'bigint',
+    transformer: {
+      to: (value: Date) => value?.getTime(),
+      from: (value: number) => new Date(value),
+    },
+  })
+  updatedAt: number;
 }
