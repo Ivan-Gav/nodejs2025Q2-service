@@ -31,7 +31,7 @@ export class Album {
   @Column({ nullable: true })
   artistId: string;
 
-  @ManyToOne(() => Artist, (artist) => artist.albums)
+  @ManyToOne(() => Artist, (artist) => artist.albums, { onDelete: 'SET NULL' })
   artist: Artist;
 
   @OneToMany(() => Track, (track) => track.albumId, { onDelete: 'SET NULL' })

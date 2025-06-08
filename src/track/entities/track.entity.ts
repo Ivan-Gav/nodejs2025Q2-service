@@ -34,10 +34,10 @@ export class Track {
   @Column({ nullable: true })
   albumId: string;
 
-  @ManyToOne(() => Artist, (artist) => artist.albums)
+  @ManyToOne(() => Artist, (artist) => artist.albums, { onDelete: 'SET NULL' })
   artist: Artist;
 
-  @ManyToOne(() => Album, (album) => album.tracks)
+  @ManyToOne(() => Album, (album) => album.tracks, { onDelete: 'SET NULL' })
   album: Album;
 
   @ManyToMany(() => Favorites, (favorites) => favorites.tracks, {

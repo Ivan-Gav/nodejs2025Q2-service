@@ -76,7 +76,9 @@ export class UserService {
 
     user.password = cryptedNewPassword;
 
-    return await this.repository.save(user);
+    const res = await this.repository.save(user);
+
+    return res;
   }
 
   async deleteUserById(id: string) {

@@ -15,8 +15,10 @@ import { RemovePasswordInterceptor } from 'src/interceptors/remove-password.inte
 import { IdParamDto } from 'src/common/dto/id-param.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { TimestampInterceptor } from 'src/interceptors/timestamp.interceptor';
 
 @UseInterceptors(RemovePasswordInterceptor)
+@UseInterceptors(TimestampInterceptor)
 @Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}
