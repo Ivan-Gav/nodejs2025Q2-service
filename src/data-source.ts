@@ -1,4 +1,12 @@
+import 'dotenv/config';
 import { DataSource, DataSourceOptions } from 'typeorm';
+import path from 'path';
+import { Artist } from './artist/entities/artist.entity';
+import { Album } from './album/entities/album.entity';
+import { Track } from './track/entities/track.entity';
+import { Favorites } from './favs/entities/fav.entity';
+import { User } from './user/entities/user.entity';
+import { SchemaUpdate1749364777312 } from './migrations/1749364777312-SchemaUpdate';
 
 const config: DataSourceOptions & { cli?: { migrationsDir: string } } = {
   type: 'postgres',
@@ -7,19 +15,16 @@ const config: DataSourceOptions & { cli?: { migrationsDir: string } } = {
   username: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DB,
-  entities: ['dist/**/*.entity.js'],
-  migrations: ['dist/migrations/*.js'],
+  entities: [Artist, Album, Track, Favorites, User],
+  // migrations: [path.join(__dirname, '../migrations/*{.ts,.js}')],
+  migrations: [SchemaUpdate1749364777312],
   synchronize: false,
   logging: true,
   cli: {
-    migrationsDir: 'src/migrations',
+    migrationsDir: path.join(__dirname, '../migrations'),
   },
 };
 
 const AppDataSource = new DataSource(config);
-
-AppDataSource.initialize()
-  .then(() => console.log('Data Source initialized'))
-  .catch((err) => console.error('Error initializing data source', err));
 
 export default AppDataSource;

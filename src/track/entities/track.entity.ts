@@ -1,6 +1,6 @@
-import { Album } from 'src/album/entities/album.entity';
-import { Artist } from 'src/artist/entities/artist.entity';
-import { Favorites } from 'src/favs/entities/fav.entity';
+import { Album } from './../../album/entities/album.entity';
+import { Artist } from './../../artist/entities/artist.entity';
+import { Favorites } from './../../favs/entities/fav.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,

@@ -42,19 +42,13 @@ export class User {
 
   @CreateDateColumn({
     type: 'bigint',
-    transformer: {
-      to: (value: Date) => value?.getTime(),
-      from: (value: number) => new Date(value),
-    },
+    default: () => 'EXTRACT(EPOCH FROM NOW()) * 1000',
   })
   createdAt: number;
 
   @UpdateDateColumn({
     type: 'bigint',
-    transformer: {
-      to: (value: Date) => value?.getTime(),
-      from: (value: number) => new Date(value),
-    },
+    default: () => 'EXTRACT(EPOCH FROM NOW()) * 1000',
   })
   updatedAt: number;
 }
