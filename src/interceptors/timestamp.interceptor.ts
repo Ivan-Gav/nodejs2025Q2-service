@@ -24,7 +24,6 @@ export class TimestampInterceptor implements NestInterceptor {
 
     if (typeof data === 'object' && !(data instanceof Date)) {
       return Object.entries(data).reduce((acc, [key, value]) => {
-        // Transform both createdAt and updatedAt
         if ((key === 'createdAt' || key === 'updatedAt') && value) {
           return {
             ...acc,
@@ -32,7 +31,6 @@ export class TimestampInterceptor implements NestInterceptor {
           };
         }
 
-        // Recursively transform nested objects
         return {
           ...acc,
           [key]: this.transform(value),

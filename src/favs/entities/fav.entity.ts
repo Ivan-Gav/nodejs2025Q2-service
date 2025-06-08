@@ -9,11 +9,7 @@ export interface FavoritesResponse {
   tracks: Track[];
 }
 
-// export interface Favorites {
-//   artists: Set<string>; // ids
-//   albums: Set<string>;
-//   tracks: Set<string>;
-// }
+export type TFavoritesType = 'artists' | 'albums' | 'tracks';
 
 @Entity()
 export class Favorites {
@@ -74,23 +70,3 @@ export class Favorites {
   })
   tracks: Track[];
 }
-
-// @Entity()
-// export class Favorites {
-//   @PrimaryColumn()
-//   id: string;
-
-//   @ManyToMany(() => Artist, {
-//     eager: true,
-//   })
-//   @JoinTable()
-//   artists: Artist[];
-
-//   @ManyToMany(() => Album, { eager: true })
-//   @JoinTable()
-//   albums: Album[];
-
-//   @ManyToMany(() => Track, { eager: true })
-//   @JoinTable()
-//   tracks: Track[];
-// }

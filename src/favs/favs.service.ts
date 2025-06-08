@@ -6,20 +6,16 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 
-// import { FavsRepository } from './favs.repository';
 import { AlbumService } from 'src/album/album.service';
 import { ArtistService } from 'src/artist/artist.service';
 import { TrackService } from 'src/track/track.service';
-import { Favorites } from './entities/fav.entity';
+import { Favorites, TFavoritesType } from './entities/fav.entity';
 import { UNPROCESSABLE_ENTITY } from 'src/common/messages/error-messages';
 import { Repository } from 'typeorm';
 import { Artist } from 'src/artist/entities/artist.entity';
 import { Album } from 'src/album/entities/album.entity';
 import { Track } from 'src/track/entities/track.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-
-// TODO move out
-type TFavoritesType = 'artists' | 'albums' | 'tracks';
 
 @Injectable()
 export class FavsService {
@@ -96,7 +92,6 @@ export class FavsService {
   }
 
   async remove(type: TFavoritesType, id: string) {
-    // await this.throwErrorIfNotExists(type, id);
     try {
       const favorites = await this.findAll();
       const entity = await this.findEntity(type, id);
@@ -113,7 +108,6 @@ export class FavsService {
       }
       throw error;
     }
-    // return this.repository.remove(type, id);
   }
 
   private async findEntity(type: TFavoritesType, id: string) {
@@ -128,31 +122,4 @@ export class FavsService {
         throw new NotFoundException();
     }
   }
-
-  // private async checkIfExists(type: TFavoritesType, id: string) {
-  //   switch (type) {
-  //     case 'artists':
-  //       await this.artistService.findOne(id);
-  //       return true;
-  //     case 'albums':
-  //       await this.albumService.findOne(id);
-  //       return true;
-  //     case 'tracks':
-  //       await this.trackService.findOne(id);
-  //       return true;
-  //     default:
-  //       return false;
-  //   }
-  // }
-
-  // private async throwErrorIfNotExists(type: TFavoritesType, id: string) {
-  //   try {
-  //     await this.checkIfExists(type, id);
-  //   } catch (error) {
-  //     if (error instanceof NotFoundException) {
-  //       // Transform 404 to 422 for favorites
-  //       throw new UnprocessableEntityException(UNPROCESSABLE_ENTITY(type, id));
-  //     }
-  //   }
-  // }
 }

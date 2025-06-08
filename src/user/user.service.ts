@@ -36,13 +36,7 @@ export class UserService {
   }
 
   async create(dto: CreateUserDto) {
-    // const isExistingUser = await this.checkIfUserExists(dto);
-
     const { login, password } = dto;
-
-    // if (isExistingUser) {
-    //   throw new BadRequestException(LOGIN_ALREADY_USED(login));
-    // }
 
     const cryptedPassword = await this.passwordUtils.hashPassword(password);
 
@@ -89,10 +83,4 @@ export class UserService {
     }
     await this.repository.remove(user);
   }
-
-  // private async checkIfUserExists(dto: CreateUserDto) {
-  //   const { login } = dto;
-  //   const all = await this.repository.findAll();
-  //   return all.some((user) => user.login === login);
-  // }
 }

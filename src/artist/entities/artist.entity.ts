@@ -9,12 +9,6 @@ import {
   ManyToMany,
 } from 'typeorm';
 
-// export interface Artist {
-//   id: string; // uuid v4
-//   name: string;
-//   grammy: boolean;
-// }
-
 @Entity()
 export class Artist {
   @PrimaryGeneratedColumn('uuid')
