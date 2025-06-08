@@ -40,8 +40,6 @@ export class Track {
   @ManyToOne(() => Album, (album) => album.tracks, { onDelete: 'SET NULL' })
   album: Album;
 
-  @ManyToMany(() => Favorites, (favorites) => favorites.tracks, {
-    cascade: ['remove'],
-  })
-  favorites: Favorites;
+  @ManyToMany(() => Favorites, (favorites) => favorites.tracks)
+  favorites: Favorites[];
 }

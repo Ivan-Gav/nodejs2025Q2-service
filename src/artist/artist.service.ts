@@ -1,7 +1,7 @@
 import {
   // BadRequestException,
-  forwardRef,
-  Inject,
+  // forwardRef,
+  // Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,23 +12,26 @@ import {
 } from 'src/common/messages/error-messages';
 // import { ArtistRepository } from './artist.repository';
 import { Artist } from './entities/artist.entity';
-import { AlbumService } from 'src/album/album.service';
-import { FavsService } from 'src/favs/favs.service';
-import { TrackService } from 'src/track/track.service';
+// import { AlbumService } from 'src/album/album.service';
+// import { FavsService } from 'src/favs/favs.service';
+// import { TrackService } from 'src/track/track.service';
 import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Favorites } from 'src/favs/entities/fav.entity';
 
 @Injectable()
 export class ArtistService {
   constructor(
-    @Inject(forwardRef(() => AlbumService))
-    private readonly albumService: AlbumService,
-    @Inject(forwardRef(() => FavsService))
-    private readonly favsService: FavsService,
-    @Inject(forwardRef(() => TrackService))
-    private readonly tracksService: TrackService,
+    // @Inject(forwardRef(() => AlbumService))
+    // private readonly albumService: AlbumService,
+    // @Inject(forwardRef(() => FavsService))
+    // private readonly favsService: FavsService,
+    // @Inject(forwardRef(() => TrackService))
+    // private readonly tracksService: TrackService,
     @InjectRepository(Artist)
     private readonly repository: Repository<Artist>,
+    @InjectRepository(Favorites)
+    private readonly favorites: Repository<Favorites>,
   ) {}
 
   async create(dto: CreateArtistDto) {
@@ -85,8 +88,19 @@ export class ArtistService {
 
     const artist = await this.repository.findOneBy({ id });
 
+    console.log('artist to remove => ', artist);
+
     if (!artist) {
       throw new NotFoundException(ARTIST_NOT_FOUND(id));
+    }
+
+    if (artist.favorites) {
+      console.log('artist.favorites = ', artist.favorites);
+      artist.favorites = null;
+      console.log('artist.favorites nullified = ', artist);
+
+      await this.repository.save(artist);
+      console.log('nullified fav artist successfully saved');
     }
 
     await this.repository.remove(artist);

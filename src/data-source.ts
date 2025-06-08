@@ -6,7 +6,7 @@ import { Album } from './album/entities/album.entity';
 import { Track } from './track/entities/track.entity';
 import { Favorites } from './favs/entities/fav.entity';
 import { User } from './user/entities/user.entity';
-import { SchemaUpdate1749364777312 } from './migrations/1749364777312-SchemaUpdate';
+import { SchemaUpdate1749402498212 } from './migrations/1749402498212-SchemaUpdate';
 
 const config: DataSourceOptions & { cli?: { migrationsDir: string } } = {
   type: 'postgres',
@@ -17,7 +17,7 @@ const config: DataSourceOptions & { cli?: { migrationsDir: string } } = {
   database: process.env.POSTGRES_DB,
   entities: [Artist, Album, Track, Favorites, User],
   // migrations: [path.join(__dirname, '../migrations/*{.ts,.js}')],
-  migrations: [SchemaUpdate1749364777312],
+  migrations: [SchemaUpdate1749402498212],
   synchronize: false,
   logging: true,
   cli: {

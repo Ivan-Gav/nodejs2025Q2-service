@@ -35,18 +35,27 @@ export class FavsService {
   ) {}
 
   async findAll() {
-    return await this.repository.findOneBy({ id: 'default' });
+    let favorites = await this.repository.findOne({
+      where: { id: 'default' },
+      relations: ['artists', 'albums', 'tracks'],
+    });
 
-    // return {
-    //   artists: await this.artistService.findMany(favorites.artists),
-    //   albums: await this.albumService.findMany(favorites.albums),
-    //   tracks: await this.trackService.findMany(favorites.tracks),
-    // };
+    if (!favorites) {
+      favorites = {
+        id: 'default',
+        artists: [],
+        albums: [],
+        tracks: [],
+      };
+      await this.repository.save(favorites);
+    }
+
+    return favorites;
   }
 
   async update(type: TFavoritesType, id: string) {
     try {
-      const favorites = await this.repository.findOneBy({ id: 'default' });
+      const favorites = await this.findAll();
       const entity = await this.findEntity(type, id);
 
       switch (type) {
@@ -74,6 +83,7 @@ export class FavsService {
         default:
           break;
       }
+
       await this.repository.save(favorites);
       return favorites;
     } catch (error) {
@@ -88,7 +98,7 @@ export class FavsService {
   async remove(type: TFavoritesType, id: string) {
     // await this.throwErrorIfNotExists(type, id);
     try {
-      const favorites = await this.repository.findOneBy({ id: 'default' });
+      const favorites = await this.findAll();
       const entity = await this.findEntity(type, id);
 
       (favorites[type] as Array<typeof entity>) = favorites[type].filter(
