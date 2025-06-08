@@ -16,6 +16,7 @@ import { AlbumService } from 'src/album/album.service';
 import { FavsService } from 'src/favs/favs.service';
 import { TrackService } from 'src/track/track.service';
 import { In, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class ArtistService {
@@ -26,6 +27,7 @@ export class ArtistService {
     private readonly favsService: FavsService,
     @Inject(forwardRef(() => TrackService))
     private readonly tracksService: TrackService,
+    @InjectRepository(Artist)
     private readonly repository: Repository<Artist>,
   ) {}
 

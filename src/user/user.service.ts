@@ -13,11 +13,13 @@ import {
 import { PasswordUtils } from 'src/common/utils/password.utils';
 // import { UserRepository } from './user.repository';
 import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly passwordUtils: PasswordUtils,
+    @InjectRepository(User)
     private readonly repository: Repository<User>,
   ) {}
 

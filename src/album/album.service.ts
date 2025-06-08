@@ -17,10 +17,12 @@ import { TrackService } from 'src/track/track.service';
 import { FavsService } from 'src/favs/favs.service';
 import { ArtistService } from 'src/artist/artist.service';
 import { In, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class AlbumService {
   constructor(
+    @InjectRepository(Album)
     private readonly repository: Repository<Album>,
     @Inject(forwardRef(() => ArtistService))
     private readonly artistService: ArtistService,

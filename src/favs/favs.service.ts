@@ -16,6 +16,7 @@ import { Repository } from 'typeorm';
 import { Artist } from 'src/artist/entities/artist.entity';
 import { Album } from 'src/album/entities/album.entity';
 import { Track } from 'src/track/entities/track.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 // TODO move out
 type TFavoritesType = 'artists' | 'albums' | 'tracks';
@@ -23,6 +24,7 @@ type TFavoritesType = 'artists' | 'albums' | 'tracks';
 @Injectable()
 export class FavsService {
   constructor(
+    @InjectRepository(Favorites)
     private readonly repository: Repository<Favorites>,
     @Inject(forwardRef(() => ArtistService))
     private readonly artistService: ArtistService,
