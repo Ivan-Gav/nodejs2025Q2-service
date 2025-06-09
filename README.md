@@ -4,6 +4,8 @@ This task is a part of the [RSSchool Node.js Course](https://rs.school/courses/n
 
 [Task description](https://github.com/AlreadyBored/nodejs-assignments/blob/main/assignments/containerization-database-orm/assignment.md)
 
+[Image on DockerHub](https://hub.docker.com/r/ivangavrilin/rss-rest-service)
+
 ### Prerequisites
 
 - Docker installed (Docker Desktop recommended)
@@ -41,6 +43,7 @@ Tests
 - `npm run test test/favorites.e2e.spec.ts`
 - `npm run test test/tracks.e2e.spec.ts`
 - `npm run test test/users.e2e.spec.ts`
+- `npm run vulnerability-scan` - scan docker image for vulnerabilities
 
 Other
 
