@@ -6,19 +6,26 @@ This task is a part of the [RSSchool Node.js Course](https://rs.school/courses/n
 
 ### Prerequisites
 
-I didn't manage to acomplish the Docker part. To run the app you have to install the database locally. If you don't have Postgres installed on your PC please [install](https://www.postgresql.org/download/) it. I am sorry for inconvenience.
+- Docker installed (Docker Desktop recommended)
+- Postgres installed
 
 ### Installation
 
 - clone this repo
 - run `npm install` to install dependencies
 - create `.env` file in the root directory (copy from .env.example)
+- run `docker-compose -f docker-compose.test.yml up` to run container from image
+- after testing run `docker-compose -f docker-compose.test.yml down` for clean up
+
+### Scripts
+
+To run app locally without Docker
+
+- change `POSTGRES_HOST` in `.env` to **localhost**
 - run `createdb -U {username} -h localhost -p {port} {database_name}` to create database
 - alternatively you can create it using pgAdmin
 - run `npm run start:dev` to start app
-- open another terminal and run `npm run migration:run` to apply initial migration
-
-### Scripts
+- open another terminal and `run npm run migration:run` to apply initial migration
 
 Start app
 
@@ -27,8 +34,6 @@ Start app
 - `npm run start:prod` - start in production mode
 
 Tests
-
-**Important: tests are e2e. Please make sure to (re)start the app before running them!**
 
 - `npm run test`
 - `npm run test test/albums.e2e.spec.ts`
