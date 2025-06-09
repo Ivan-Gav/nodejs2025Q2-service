@@ -1,10 +1,5 @@
 FROM postgres:15-alpine
 
-# Copy initialization scripts (if any)
-COPY ./docker/init-scripts/ /docker-entrypoint-initdb.d/
-RUN chmod +x /docker-entrypoint-initdb.d/*.sh
-
-
 # Expose PostgreSQL port
 EXPOSE ${POSTGRES_PORT:-5432}
 

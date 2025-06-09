@@ -40,7 +40,7 @@ services:
     env_file:
       - .env
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=development
       - PORT=${PORT:-4000}
       - DB_HOST=${POSTGRES_HOST:-postgres}
       - DB_PORT=${POSTGRES_PORT:-5432}
@@ -48,6 +48,9 @@ services:
       - DB_USER=${POSTGRES_USER}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - JWT_SECRET=${JWT_SECRET_KEY}
+    volumes:
+      - ./src:/app/src
+      - ./tsconfig.json:/app/tsconfig.json
     depends_on:
       postgres:
         condition: service_healthy
