@@ -1,5 +1,5 @@
 # Build stage
-FROM node:18-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -14,11 +14,12 @@ ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 RUN npm run build
 
-FROM node:18-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
 COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/tsconfig*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 
@@ -36,4 +37,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:${PORT:-4000}/health || exit 1
 
 # Start command
-CMD ["node", "dist/main.js"]
+CMD ["npm", "run", "start:dev"]
