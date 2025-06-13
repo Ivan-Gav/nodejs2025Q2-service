@@ -3,9 +3,12 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import 'dotenv/config';
 import AppDataSource from './data-source';
+import { LoggingService } from './logging/logging.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  // const logger = app.get(LoggingService);
+  app.resolve(LoggingService);
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
