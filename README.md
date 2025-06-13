@@ -1,72 +1,50 @@
-# Home Library Service
+# REST service: Containerization, Docker and Database & ORM
 
-## Prerequisites
+This task is a part of the [RSSchool Node.js Course](https://rs.school/courses/nodejs) 2025.
 
-- Git - [Download & Install Git](https://git-scm.com/downloads).
-- Node.js - [Download & Install Node.js](https://nodejs.org/en/download/) and the npm package manager.
+[Task description](https://github.com/AlreadyBored/nodejs-assignments/blob/main/assignments/containerization-database-orm/assignment.md)
 
-## Downloading
+[Image on DockerHub](https://hub.docker.com/r/ivangavrilin/rss-rest-service)
 
-```
-git clone {repository URL}
-```
+### Prerequisites
 
-## Installing NPM modules
+- Docker installed (Docker Desktop recommended)
+- Postgres installed
 
-```
-npm install
-```
+### Installation
 
-## Running application
+- clone this repo
+- run `npm install` to install dependencies
+- create `.env` file in the root directory (copy from .env.example)
+- run `docker-compose -f docker-compose.test.yml up` to run container from image
+- after testing run `docker-compose -f docker-compose.test.yml down` for clean up
 
-```
-npm start
-```
+### Scripts
 
-After starting the app on port (4000 as default) you can open
-in your browser OpenAPI documentation by typing http://localhost:4000/doc/.
-For more information about OpenAPI/Swagger please visit https://swagger.io/.
+To run app locally without Docker
 
-## Testing
+- change `POSTGRES_HOST` in `.env` to **localhost**
+- run `createdb -U {username} -h localhost -p {port} {database_name}` to create database
+- alternatively you can create it using pgAdmin
+- run `npm run start:dev` to start app
+- open another terminal and `run npm run migration:run` to apply initial migration
 
-After application running open new terminal and enter:
+Start app
 
-To run all tests without authorization
+- `npm run start:dev` - start in dev mode
+- `npm run build` - build app
+- `npm run start:prod` - start in production mode
 
-```
-npm run test
-```
+Tests
 
-To run only one of all test suites
+- `npm run test`
+- `npm run test test/albums.e2e.spec.ts`
+- `npm run test test/artists.e2e.spec.ts`
+- `npm run test test/favorites.e2e.spec.ts`
+- `npm run test test/tracks.e2e.spec.ts`
+- `npm run test test/users.e2e.spec.ts`
+- `npm run vulnerability-scan` - scan docker image for vulnerabilities
 
-```
-npm run test -- <path to suite>
-```
+Other
 
-To run all test with authorization
-
-```
-npm run test:auth
-```
-
-To run only specific test suite with authorization
-
-```
-npm run test:auth -- <path to suite>
-```
-
-### Auto-fix and format
-
-```
-npm run lint
-```
-
-```
-npm run format
-```
-
-### Debugging in VSCode
-
-Press <kbd>F5</kbd> to debug.
-
-For more information, visit: https://code.visualstudio.com/docs/editor/debugging
+take a look into `package.json` to see full list of scripts
