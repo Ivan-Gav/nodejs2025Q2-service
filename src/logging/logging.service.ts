@@ -151,10 +151,23 @@ export class LoggingService {
         );
 
     this.writeToStream(this.appLogStream, logMessage);
-    if (level >= LogLevel.ERROR) {
+    if (level <= LogLevel.ERROR) {
       this.writeToStream(this.errorLogStream, logMessage);
     }
-    process.stdout.write(`${logMessage}\n`);
+    this.writeColoredConsole(level, logMessage);
+  }
+
+  private writeColoredConsole(level: LogLevel, message: string) {
+    const colors = {
+      [LogLevel.ERROR]: '\x1b[31m', // Red
+      [LogLevel.WARN]: '\x1b[33m', // Yellow
+      [LogLevel.LOG]: '\x1b[32m', // Green
+      [LogLevel.DEBUG]: '\x1b[36m', // Cyan
+      [LogLevel.VERBOSE]: '\x1b[37m', // White
+    };
+    const reset = '\x1b[0m';
+
+    process.stdout.write(`${colors[level]}${message}${reset}\n`);
   }
 
   private async writeToStream(stream: WriteStream, message: string) {
@@ -218,6 +231,6 @@ export class LoggingService {
   }
 
   isLevelEnabled(level: LogLevel): boolean {
-    return level <= this.currentLogLevel;
+    return level >= this.currentLogLevel;
   }
 }
