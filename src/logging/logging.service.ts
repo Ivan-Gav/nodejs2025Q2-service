@@ -1,166 +1,13 @@
-// import { ConsoleLogger, Injectable, Scope } from '@nestjs/common';
-// import { createWriteStream, promises as fsPromises, WriteStream } from 'fs';
-// import { pipeline } from 'stream/promises';
-// import { Readable } from 'stream';
-// import { join } from 'path';
-
-// @Injectable({ scope: Scope.TRANSIENT })
-// export class LoggingService extends ConsoleLogger {
-//   private appLogStream: WriteStream;
-//   private errorLogStream: WriteStream;
-//   private logsDir = 'logs';
-//   private appLogFile = 'app.log';
-//   private errorLogFile = 'error.log';
-//   private maxFileSize: number;
-//   private rotationCheckInterval: NodeJS.Timeout;
-
-//   constructor(context?: string) {
-//     super(context, {
-//       // @ts-expect-error the option oficially exists in Nestjs. I just didn't want to fix the declaration file
-//       prefix: process.env.LOG_PREFIX || 'MyApp',
-//       // timestamp: true,
-//     });
-//     this.maxFileSize = process.env.LOG_MAX_FILE_SIZE
-//       ? parseInt(process.env.LOG_MAX_FILE_SIZE)
-//       : 10 * 1024;
-//     this.initialize().catch((err) => {
-//       super.error('Failed to initialize logger', err.stack);
-//     });
-//   }
-
-//   private async initialize() {
-//     try {
-//       await fsPromises.mkdir(this.logsDir, { recursive: true });
-//       this.appLogStream = this.createLogStream(this.appLogFile);
-//       this.errorLogStream = this.createLogStream(this.errorLogFile);
-//       this.setupRotationChecks();
-//     } catch (err) {
-//       super.error('Logger initialization failed', err.stack);
-//     }
-//   }
-
-//   private createLogStream(filename: string): WriteStream {
-//     return createWriteStream(join(this.logsDir, filename), { flags: 'a' });
-//   }
-
-//   private setupRotationChecks() {
-//     this.rotationCheckInterval = setInterval(
-//       () =>
-//         this.checkLogRotation().catch((err) => {
-//           super.error('Log rotation check failed', err.stack);
-//         }),
-//       60000, // Check every minute
-//     );
-//   }
-
-//   private async checkLogRotation() {
-//     await Promise.all([
-//       this.checkFileRotation(this.appLogFile, this.appLogStream),
-//       this.checkFileRotation(this.errorLogFile, this.errorLogStream),
-//     ]);
-//   }
-
-//   private async checkFileRotation(filename: string, stream: WriteStream) {
-//     try {
-//       const filePath = join(this.logsDir, filename);
-//       const stats = await fsPromises.stat(filePath).catch(() => null);
-
-//       if (stats && stats.size > this.maxFileSize) {
-//         await this.rotateLogFile(filename, stream);
-//       }
-//     } catch (err) {
-//       super.error(`Failed to check rotation for ${filename}`, err.stack);
-//     }
-//   }
-
-//   private async rotateLogFile(filename: string, stream: WriteStream) {
-//     try {
-//       // Close current stream
-//       await new Promise<void>((resolve, reject) => {
-//         stream.end(() => resolve());
-//         stream.on('error', reject);
-//       });
-
-//       // Generate timestamp for rotated file
-//       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-//       const rotatedFilename = `${filename}.${timestamp}`;
-
-//       // Rename current log file
-//       await fsPromises.rename(
-//         join(this.logsDir, filename),
-//         join(this.logsDir, rotatedFilename),
-//       );
-
-//       // Create new stream
-//       if (filename === this.appLogFile) {
-//         this.appLogStream = this.createLogStream(this.appLogFile);
-//       } else {
-//         this.errorLogStream = this.createLogStream(this.errorLogFile);
-//       }
-//     } catch (err) {
-//       super.error(`Failed to rotate log file ${filename}`, err.stack);
-//     }
-//   }
-
-//   log(message: string) {
-//     super.log(message);
-//     this.writeToFile('log', message);
-//   }
-
-//   error(message: string, trace?: string) {
-//     super.error(message, trace);
-//     this.writeToFile('error', `${message}${trace ? '\n' + trace : ''}`);
-//   }
-
-//   warn(message: string) {
-//     super.warn(message);
-//     this.writeToFile('warn', message);
-//   }
-
-//   debug(message: string) {
-//     super.debug(message);
-//     this.writeToFile('debug', message);
-//   }
-
-//   verbose(message: string) {
-//     super.verbose(message);
-//     this.writeToFile('verbose', message);
-//   }
-
-//   private async writeToFile(level: string, message: string) {
-//     const timestamp = new Date().toISOString();
-//     const formatted = `${timestamp} [${this.context || 'App'}] ${level.toUpperCase()} ${message}\n`;
-
-//     try {
-//       await pipeline(
-//         Readable.from([formatted]),
-//         level === 'error' ? this.errorLogStream : this.appLogStream,
-//       );
-//     } catch (err) {
-//       super.error('Failed to write log to file', err.stack);
-//     }
-//   }
-
-//   async onApplicationShutdown() {
-//     clearInterval(this.rotationCheckInterval);
-//     await Promise.all([
-//       new Promise((resolve) => this.appLogStream.end(resolve)),
-//       new Promise((resolve) => this.errorLogStream.end(resolve)),
-//     ]);
-//   }
-// }
-
 import { Injectable, Scope } from '@nestjs/common';
 import {
   createWriteStream,
   promises as fsPromises,
   WriteStream,
 } from 'node:fs';
-import { finished, pipeline } from 'node:stream/promises';
+import { finished } from 'node:stream/promises';
 import { join } from 'node:path';
 import { format } from 'node:util';
 import { LogLevel } from './log-level.enum';
-import { Readable } from 'node:stream';
 import { getFormattedDateTimeStr } from 'src/common/utils/format.utils';
 
 @Injectable({ scope: Scope.TRANSIENT })
@@ -177,8 +24,8 @@ export class LoggingService {
   private context = 'DefaultLogger';
 
   constructor() {
-    this.initialize().catch((err) => {
-      console.error('Failed to initialize LoggingService:', err);
+    this.initialize().catch((error) => {
+      console.error('Failed to initialize LoggingService:', error);
     });
   }
 
@@ -211,14 +58,19 @@ export class LoggingService {
 
   private createLogStream(filename: string): WriteStream {
     const filePath = join(this.logsDir, filename);
-    return createWriteStream(filePath, { flags: 'a' });
+    const stream = createWriteStream(filePath, { flags: 'a' });
+    stream.setMaxListeners(20);
+    stream.on('error', (err) => {
+      console.error('Log stream error:', err);
+    });
+    return stream;
   }
 
   private setupRotationChecks() {
     this.rotationCheckInterval = setInterval(
       async () => {
         try {
-          this.checkLogRotation();
+          await this.checkLogRotation();
         } catch (error) {
           console.error('Log rotation check failed');
           throw error;
@@ -252,10 +104,10 @@ export class LoggingService {
 
   private async rotateLogFile(filename: string, stream: WriteStream) {
     try {
-      // Close current stream
-      await finished(stream.end());
+      stream.removeAllListeners().end();
+      await finished(stream);
 
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const timestamp = getFormattedDateTimeStr().replace(', ', '-');
       const rotatedFilename = `${filename}.${timestamp}`;
 
       await fsPromises.rename(
@@ -277,7 +129,6 @@ export class LoggingService {
   private writeLog(level: LogLevel, message: string, error?: Error) {
     if (level > this.currentLogLevel) return;
 
-    // const timestamp = new Date().toISOString();
     const timestamp = getFormattedDateTimeStr();
     const logLevelName = LogLevel[level];
     const logMessage = error
@@ -299,7 +150,6 @@ export class LoggingService {
           message,
         );
 
-    // Write to appropriate streams
     this.writeToStream(this.appLogStream, logMessage);
     if (level >= LogLevel.ERROR) {
       this.writeToStream(this.errorLogStream, logMessage);
@@ -308,15 +158,26 @@ export class LoggingService {
   }
 
   private async writeToStream(stream: WriteStream, message: string) {
-    const readable = Readable.from([message + '\n']);
+    if (!stream?.writable) return;
 
     try {
-      await pipeline(readable, stream);
+      await new Promise<void>((resolve, reject) => {
+        const cleanup = () => {
+          stream.removeListener('error', reject);
+          stream.removeListener('drain', resolve);
+        };
+
+        stream.once('error', reject);
+        stream.once('drain', resolve);
+
+        if (stream.write(message + '\n')) {
+          cleanup();
+          resolve();
+        }
+      });
     } catch (error) {
-      console.error('Log write failed');
-      // Fallback to console if file writing fails
-      console.log(message);
-      throw error;
+      console.error('Log write failed:', error.message);
+      console.log(message); // Fallback to console
     }
   }
 
@@ -342,7 +203,21 @@ export class LoggingService {
 
   async onApplicationShutdown() {
     clearInterval(this.rotationCheckInterval);
-    await finished(this.appLogStream.end());
-    await finished(this.errorLogStream.end());
+
+    try {
+      await this.endStream(this.appLogStream);
+      await this.endStream(this.errorLogStream);
+    } catch {}
+  }
+
+  private async endStream(stream?: WriteStream) {
+    if (!stream || stream.destroyed) return;
+
+    stream.end();
+    await finished(stream);
+  }
+
+  isLevelEnabled(level: LogLevel): boolean {
+    return level <= this.currentLogLevel;
   }
 }

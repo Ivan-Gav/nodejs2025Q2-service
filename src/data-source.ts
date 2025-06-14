@@ -25,8 +25,6 @@ const config: DataSourceOptions & { cli?: { migrationsDir: string } } = {
   },
 };
 
-console.log('config => ', config);
-
 const AppDataSource = new DataSource(config);
 
 export default AppDataSource;
