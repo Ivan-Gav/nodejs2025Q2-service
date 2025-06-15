@@ -107,7 +107,10 @@ export class LoggingService {
       stream.removeAllListeners().end();
       await finished(stream);
 
-      const timestamp = getFormattedDateTimeStr().replace(', ', '-');
+      const timestamp = new Date()
+        .toISOString()
+        .replace(/[:.]/g, '-')
+        .replace('T', '_');
       const rotatedFilename = `${filename}.${timestamp}`;
 
       await fsPromises.rename(
@@ -171,7 +174,9 @@ export class LoggingService {
   }
 
   private async writeToStream(stream: WriteStream, message: string) {
-    if (!stream?.writable) return;
+    if (!stream?.writable) {
+      return;
+    }
 
     try {
       await new Promise<void>((resolve, reject) => {
