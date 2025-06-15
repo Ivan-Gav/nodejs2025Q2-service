@@ -1,17 +1,14 @@
 import {
-  // BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { User, CreateUserDto, UpdatePasswordDto } from './entities/user.entity';
 import {
-  // LOGIN_ALREADY_USED,
   USER_NOT_FOUND,
   WRONG_PASSWORD,
 } from 'src/common/messages/error-messages';
 import { PasswordUtils } from 'src/common/utils/password.utils';
-// import { UserRepository } from './user.repository';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -82,5 +79,9 @@ export class UserService {
       throw new NotFoundException(USER_NOT_FOUND(id));
     }
     await this.repository.remove(user);
+  }
+
+  async findByLogin(login: string) {
+    return this.repository.findOne({ where: { login } });
   }
 }
