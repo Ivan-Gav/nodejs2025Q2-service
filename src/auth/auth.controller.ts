@@ -11,8 +11,10 @@ import { UserService } from '../user/user.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { CreateUserDto } from '../user/dto/create-user.dto';
+import { Public } from './decorators/public.decorator';
 
 @Controller('auth')
+@Public()
 export class AuthController {
   constructor(
     private readonly authService: AuthService,

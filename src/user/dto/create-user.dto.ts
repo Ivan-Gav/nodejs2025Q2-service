@@ -1,9 +1,11 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateUserDto {
-  @IsNotEmpty()
+  @IsString({ message: 'Login must be a string' })
+  @IsNotEmpty({ message: 'Login is required' })
   login: string;
 
-  @IsNotEmpty()
+  @IsString({ message: 'Password must be a string' })
+  @IsNotEmpty({ message: 'Password is required' })
   password: string;
 }

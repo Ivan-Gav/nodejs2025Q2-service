@@ -34,7 +34,6 @@ export class UserService {
 
   async create(dto: CreateUserDto) {
     const { login, password } = dto;
-
     const cryptedPassword = await this.passwordUtils.hashPassword(password);
 
     const newUser = {
