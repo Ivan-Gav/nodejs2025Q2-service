@@ -4,6 +4,7 @@ import {
   Body,
   HttpCode,
   HttpStatus,
+  ForbiddenException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -36,7 +37,7 @@ export class AuthController {
       loginDto.password,
     );
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new ForbiddenException('Invalid credentials');
     }
     return this.authService.login(user);
   }
@@ -44,10 +45,17 @@ export class AuthController {
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
+    if (
+      !refreshTokenDto.refreshToken ||
+      typeof refreshTokenDto.refreshToken !== 'string'
+    ) {
+      throw new UnauthorizedException('Refresh token is required');
+    }
+
     try {
       return await this.authService.refreshToken(refreshTokenDto.refreshToken);
     } catch (e) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new ForbiddenException('Invalid refresh token');
     }
   }
 }
