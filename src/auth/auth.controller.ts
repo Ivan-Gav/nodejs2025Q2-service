@@ -6,6 +6,7 @@ import {
   HttpStatus,
   ForbiddenException,
   UnauthorizedException,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from '../user/user.service';
@@ -13,7 +14,11 @@ import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { Public } from './decorators/public.decorator';
+import { RemovePasswordInterceptor } from 'src/interceptors/remove-password.interceptor';
+import { TimestampInterceptor } from 'src/interceptors/timestamp.interceptor';
 
+@UseInterceptors(RemovePasswordInterceptor)
+@UseInterceptors(TimestampInterceptor)
 @Controller('auth')
 @Public()
 export class AuthController {
@@ -25,8 +30,8 @@ export class AuthController {
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)
   async signup(@Body() createUserDto: CreateUserDto) {
-    await this.userService.create(createUserDto);
-    return { message: 'User created successfully' };
+    return await this.userService.create(createUserDto);
+    // return { message: 'User created successfully' };
   }
 
   @Post('login')

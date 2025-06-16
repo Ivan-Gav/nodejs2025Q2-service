@@ -58,10 +58,10 @@ export class AuthService {
 
   async refreshToken(refreshToken: string): Promise<Tokens> {
     try {
-      const payload = this.jwtService.verify<User>(refreshToken, {
+      const payload = this.jwtService.verify(refreshToken, {
         secret: process.env.JWT_SECRET_REFRESH_KEY,
       });
-      return this.login(payload);
+      return this.login({ ...payload, id: payload.userId });
     } catch (e) {
       throw new UnauthorizedException('Invalid refresh token');
     }
