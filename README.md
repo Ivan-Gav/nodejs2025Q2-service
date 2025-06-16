@@ -1,72 +1,27 @@
-# Home Library Service
+# REST service: Logging & Error Handling and Authentication and Authorization
 
-## Prerequisites
+This task is a part of the [RSSchool Node.js Course](https://rs.school/courses/nodejs) 2025.
 
-- Git - [Download & Install Git](https://git-scm.com/downloads).
-- Node.js - [Download & Install Node.js](https://nodejs.org/en/download/) and the npm package manager.
+[Task description](https://github.com/AlreadyBored/nodejs-assignments/blob/main/assignments/logging-error-authentication-authorization/assignment.md)
 
-## Downloading
+### Installation
 
-```
-git clone {repository URL}
-```
+- clone this repo
+- run `npm install` to install dependencies
+- create `.env` file in the root directory (copy from .env.example)
+- run `createdb -U {username} -h localhost -p {port} {database_name}` to create database
+- alternatively you can create it using pgAdmin
+- run `npm run start:dev` to start app
+- open another terminal and run `npm run migration:run` to apply initial migration
 
-## Installing NPM modules
+### Scripts
 
-```
-npm install
-```
+Start app
 
-## Running application
+- `npm run start:dev` - start in dev mode
+- `npm run build` - build app
+- `npm run start:prod` - start in production mode
 
-```
-npm start
-```
+Other
 
-After starting the app on port (4000 as default) you can open
-in your browser OpenAPI documentation by typing http://localhost:4000/doc/.
-For more information about OpenAPI/Swagger please visit https://swagger.io/.
-
-## Testing
-
-After application running open new terminal and enter:
-
-To run all tests without authorization
-
-```
-npm run test
-```
-
-To run only one of all test suites
-
-```
-npm run test -- <path to suite>
-```
-
-To run all test with authorization
-
-```
-npm run test:auth
-```
-
-To run only specific test suite with authorization
-
-```
-npm run test:auth -- <path to suite>
-```
-
-### Auto-fix and format
-
-```
-npm run lint
-```
-
-```
-npm run format
-```
-
-### Debugging in VSCode
-
-Press <kbd>F5</kbd> to debug.
-
-For more information, visit: https://code.visualstudio.com/docs/editor/debugging
+take a look into `package.json` to see full list of scripts

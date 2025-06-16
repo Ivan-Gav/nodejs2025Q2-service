@@ -1,0 +1,86 @@
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { User, CreateUserDto, UpdatePasswordDto } from './entities/user.entity';
+import {
+  USER_NOT_FOUND,
+  WRONG_PASSWORD,
+} from 'src/common/messages/error-messages';
+import { PasswordUtils } from 'src/common/utils/password.utils';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+
+@Injectable()
+export class UserService {
+  constructor(
+    private readonly passwordUtils: PasswordUtils,
+    @InjectRepository(User)
+    private readonly repository: Repository<User>,
+  ) {}
+
+  async findAll() {
+    return await this.repository.find();
+  }
+
+  async findOne(id: string) {
+    const user = await this.repository.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException(USER_NOT_FOUND(id));
+    }
+    return user;
+  }
+
+  async create(dto: CreateUserDto) {
+    const { login, password } = dto;
+    const cryptedPassword = await this.passwordUtils.hashPassword(password);
+
+    const newUser = {
+      login,
+      password: cryptedPassword,
+    };
+
+    return await this.repository.save(newUser);
+  }
+
+  async updateUserPasswordById(id: string, newPasswordDto: UpdatePasswordDto) {
+    const user = await this.repository.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException(USER_NOT_FOUND(id));
+    }
+
+    const { oldPassword, newPassword } = newPasswordDto;
+
+    const isOldPasswordCorrect = await this.passwordUtils.comparePassword(
+      oldPassword,
+      user.password,
+    );
+
+    if (!isOldPasswordCorrect) {
+      throw new ForbiddenException(WRONG_PASSWORD());
+    }
+
+    const cryptedNewPassword =
+      await this.passwordUtils.hashPassword(newPassword);
+
+    user.password = cryptedNewPassword;
+
+    const res = await this.repository.save(user);
+
+    return res;
+  }
+
+  async deleteUserById(id: string) {
+    const user = await this.repository.findOneBy({ id });
+
+    if (!user) {
+      throw new NotFoundException(USER_NOT_FOUND(id));
+    }
+    await this.repository.remove(user);
+  }
+
+  async findByLogin(login: string) {
+    return this.repository.findOne({ where: { login } });
+  }
+}
